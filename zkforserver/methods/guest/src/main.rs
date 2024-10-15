@@ -12,6 +12,20 @@ use zkcore::{Inputs, Outputs};
 fn type_name_of<T>(_: &T) -> &'static str {
     type_name::<T>()
 }
+fn xor_convert(data: Vec<u8>, key: Vec<u8>) -> Vec<u8> {
+    // Create a new vector to store the encrypted result
+    let mut convert_data = Vec::with_capacity(data.len());
+
+    // Perform XOR encryption
+    for (i, byte) in data.iter().enumerate() {
+        // XOR each byte with the corresponding byte in the key
+        // The key is repeated if it's shorter than the data
+        let convert_byte = byte ^ key[i % key.len()];
+        convert_data.push(convert_byte);
+    }
+    convert_data
+}
+
 fn main() {
     // read the input
     let input: Inputs = env::read();
@@ -22,11 +36,13 @@ fn main() {
     let key = GenericArray::from(input.key);
     println!("{:?}", input.key);
     //let key = Aes256Gcm::generate_key(OsRng);
-    let cipher = Aes256Gcm::new(&key);
+    //let cipher = Aes256Gcm::new(&key);
+    let ciphertext = xor_convert((input.data).clone(), (input.key.to_vec().clone()));
     let nonce = GenericArray::from(input.nonce); // 96-bits; unique per message
-    println!("{:?}", input.nonce);
-    //env::log("ok2");
-    let ciphertext = cipher.encrypt(&nonce, input.data.as_ref()).unwrap();
+                                                 //println!("{:?}", input.nonce);
+                                                 //env::log("ok2");
+                                                 //let ciphertext = cipher.encrypt(&nonce, input.data.as_ref()).unwrap();
+
     println!("ciphertext: {}", ciphertext[2]);
     println!("key: {:?}", type_name_of(&key));
     println!("nonce: {:?}", type_name_of(&nonce));
